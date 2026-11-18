@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E5E63">
+<meta property="og:title" content="Palestra sociale · Ivrea Canoa Club">
+<meta property="og:description" content="Prenota il tuo turno in palestra: scrivi il tuo nome e scegli l'orario.">
+<meta property="og:type" content="website">
+<meta name="description" content="Prenotazione della palestra sociale dell'Ivrea Canoa Club.">
+<title>Palestra Ivrea Canoa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: strip di giorni, timetable a righe da 30 minuti, pannello Gestione per gli admin.
+   Motivo grafico: le strisce verdi e rosse dei pali delle porte da slalom. */
+:root{
+  --bg:#EDF2F1; --surface:#FFFFFF; --ink:#0F2A2B; --muted:#586F6E; --line:#D3DEDC;
+  --brand:#0E5E63; --brand-ink:#FFFFFF; --soft:#E1ECEA;
+  --go:#2A8350; --warn:#B87A0C; --warn-soft:#F6EAC9; --stop:#C0352B; --stop-soft:#F8E3E0;
+  --font-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0C1B1C; --surface:#132829; --ink:#E6F0EF; --muted:#93ABA9; --line:#254243;
+    --brand:#4DB6BC; --brand-ink:#06201F; --soft:#1B3637;
+    --go:#5CC38A; --warn:#E0A93B; --warn-soft:#3B2F10; --stop:#EF7B72; --stop-soft:#412120;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;min-height:100vh;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:720px;margin-inline:auto}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+[hidden]{display:none!important}
+
+.gates{display:flex;gap:6px;padding-top:18px;max-width:720px;margin-inline:auto}
+.gates i{flex:1;height:8px;border-radius:2px}
+.gates i:first-child{background:repeating-linear-gradient(90deg,var(--go) 0 10px,var(--surface) 10px 20px)}
+.gates i:last-child{background:repeating-linear-gradient(90deg,var(--stop) 0 10px,var(--surface) 10px 20px)}
+header{padding-top:14px}
+.eyebrow{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.12em;font-weight:600;font-size:14px;color:var(--brand);margin:0}
+h1{font-family:var(--font-display);font-weight:700;font-size:40px;line-height:1;margin:2px 0 6px;text-wrap:balance}
+#sub{color:var(--muted);margin:0}
+
+nav#tabs{display:flex;gap:6px;margin-top:14px}
+nav#tabs button{flex:1;min-height:42px;border:1px solid var(--line);background:var(--surface);border-radius:8px;font-weight:600;cursor:pointer}
+nav#tabs button[aria-selected="true"]{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+main{padding-top:16px}
+
+label{font-size:13px;font-weight:600;color:var(--muted)}
+input[type=text],input[type=password],input[type=number],input[type=date],select{min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);width:100%;min-width:0}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.hint{font-size:12px;color:var(--muted);margin:4px 0 0}
+.btn{min-height:44px;padding:0 18px;border-radius:8px;border:1px solid var(--brand);background:var(--brand);color:var(--brand-ink);font-weight:600;cursor:pointer}
+.btn.sec{background:transparent;color:var(--ink);border-color:var(--line)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.linkbtn{background:none;border:0;padding:6px 8px;color:var(--brand);font-weight:600;cursor:pointer;border-radius:6px}
+.linkbtn.danger{color:var(--stop)}
+section.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:16px}
+section.card:first-child{margin-top:0}
+section.card h2{font-family:var(--font-display);font-size:24px;margin:0 0 10px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+
+#welcome .card{margin-top:0}
+#welcome p{margin:0 0 12px;color:var(--muted)}
+
+.who{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.who b{font-family:var(--font-display);font-size:22px;overflow-wrap:anywhere}
+.withbox{margin-bottom:14px;padding:12px;border:1px dashed var(--line);border-radius:10px;background:var(--surface)}
+.withbox summary{font-weight:600;cursor:pointer;min-height:28px}
+.names{margin-top:6px;font-size:13px;line-height:1.3;overflow-wrap:anywhere}
+.names b{font-weight:600}
+.names.none{color:var(--muted)}
+
+.days{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px;scrollbar-width:thin}
+.day{flex:0 0 auto;width:56px;padding:8px 0;border:1px solid var(--line);background:var(--surface);border-radius:8px;cursor:pointer;text-align:center;line-height:1.1}
+.day small{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.day b{font-family:var(--font-display);font-size:24px;font-weight:600}
+.day[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.day[aria-pressed="true"] small{color:inherit;opacity:.85}
+#daytitle{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin:8px 0}
+#daytitle h2{font-family:var(--font-display);font-size:24px;margin:0}
+#daytitle h2::first-letter,.mine-item b::first-letter{text-transform:uppercase}
+#daytitle span{font-size:13px;color:var(--muted)}
+
+.slot{background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-bottom:6px;overflow:hidden}
+.slot .row{display:grid;grid-template-columns:62px minmax(0,1fr) 104px;gap:10px;align-items:center;padding:8px 10px;min-height:54px}
+.time{font-family:var(--font-display);font-size:22px;font-weight:600;line-height:1}
+.time small{display:block;font-family:var(--font-body);font-size:11px;font-weight:400;color:var(--muted);margin-top:2px}
+.occ{min-width:0}
+.occ .meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);margin-bottom:4px}
+.bar{height:6px;border-radius:3px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--go);border-radius:3px}
+.slot.busy .bar i{background:var(--warn)}
+.slot.full .bar i{background:var(--stop)}
+.slot.past{opacity:.5}
+.slot.blocked{background:var(--stop-soft);border-color:transparent}
+.slot.blocked .lbl{font-weight:600;color:var(--stop);overflow-wrap:anywhere}
+.slot.mine{border-color:var(--go);box-shadow:inset 3px 0 0 var(--go)}
+.act button{width:100%;min-height:42px;border-radius:8px;border:1px solid var(--brand);background:var(--brand);color:var(--brand-ink);font-weight:600;cursor:pointer}
+.act button.ghost{background:transparent;color:var(--ink);border-color:var(--go)}
+.act button:disabled{background:transparent;color:var(--muted);border-color:var(--line);cursor:not-allowed}
+.act .tag{display:block;text-align:center;font-size:12px;color:var(--muted)}
+.details{border-top:1px dashed var(--line);padding:6px 10px;font-size:13px;display:flex;flex-direction:column;gap:4px}
+.details .p{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.details .p span{overflow-wrap:anywhere}
+.seeall{background:none;border:0;color:var(--muted);font-size:12px;padding:6px 0;cursor:pointer;text-decoration:underline}
+
+.mine-item,.blockitem{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+.mine-item:first-of-type,.blockitem:first-of-type{border-top:0}
+.mine-item div,.blockitem .txt{min-width:0;overflow-wrap:anywhere}
+.blockitem .txt small{display:block;color:var(--muted)}
+.blockitem .btns{display:flex;gap:2px;flex-shrink:0}
+.empty{color:var(--muted);margin:0}
+.stat{display:flex;flex-direction:column;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.stat b{font-family:var(--font-display);font-size:28px;line-height:1.1}
+.stat span{font-size:12px;color:var(--muted)}
+.daychecks{display:flex;gap:6px;flex-wrap:wrap}
+.daychecks label{display:flex;align-items:center;justify-content:center;min-width:48px;min-height:42px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);cursor:pointer;font-size:13px;position:relative}
+.daychecks input{position:absolute;opacity:0;pointer-events:none}
+.daychecks label:has(input:checked){background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.daychecks label:has(input:focus-visible){outline:2px solid var(--brand);outline-offset:2px}
+footer{margin-top:28px;text-align:center;font-size:13px}
+footer button{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;min-height:36px}
+#loginbox{margin-top:12px}
+#err{margin-bottom:12px;padding:10px 12px;border-radius:8px;background:var(--stop-soft);border:1px solid var(--stop)}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px);background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+#toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+@media (max-width:380px){.slot .row{grid-template-columns:54px minmax(0,1fr) 92px}h1{font-size:34px}}
+</style>
+</head>
+<body>
+<div class="gates" aria-hidden="true"><i></i><i></i></div>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Ivrea Canoa Club</p>
+    <h1>Palestra sociale</h1>
+    <p id="sub"></p>
+  </header>
+
+  <nav id="tabs" hidden>
+    <button id="tab-book" aria-selected="true">Prenota</button>
+    <button id="tab-admin" aria-selected="false">Gestione</button>
+  </nav>
+
+  <main>
+    <div id="err" role="alert" hidden></div>
+
+    <section id="welcome" hidden>
+      <section class="card">
+        <h2>Entra</h2>
+        <p>Scrivi nome, cognome e un PIN di 4 cifre. Se è la prima volta scegli tu il PIN e ricordalo: ti serve per entrare da un altro telefono e per annullare le tue prenotazioni. Nessun altro può toccarle.</p>
+        <form id="regform">
+          <div class="field"><label for="reg-name">Nome e cognome</label>
+          <input id="reg-name" type="text" maxlength="40" autocomplete="name" required></div>
+          <div class="field" style="margin-top:10px"><label for="reg-pin">PIN di 4 cifre</label>
+          <input id="reg-pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="current-password" required></div>
+          <div class="btnrow"><button class="btn" type="submit">Entra</button></div>
+        </form>
+        <div id="newbox" hidden style="margin-top:14px;padding:12px;border-radius:8px;background:var(--warn-soft);border:1px solid var(--warn)">
+          <p style="margin:0 0 4px;color:var(--ink)"><b id="newname"></b> non è ancora iscritto.</p>
+          <p style="margin:0;color:var(--ink)">Se sei nuovo, crea il profilo: il tuo PIN sarà quello appena scritto. Se invece hai sbagliato il nome, torna indietro.</p>
+          <div class="btnrow"><button class="btn" id="newok" type="button">Sì, crea il mio profilo</button><button class="btn sec" id="newno" type="button">Ho sbagliato il nome</button></div>
+        </div>
+      </section>
+    </section>
+
+    <section id="view-book" hidden>
+      <div class="who"><b id="hello"></b><span><button class="linkbtn" id="rename">Cambia nome</button><button class="linkbtn" id="exit">Esci</button></span></div>
+      <form id="renameform" class="card" hidden style="margin-top:0;margin-bottom:12px">
+        <div class="field"><label for="new-name">Nuovo nome</label><input id="new-name" type="text" maxlength="40" autocomplete="name"></div>
+        <div class="btnrow"><button class="btn" type="submit">Salva</button><button class="btn sec" type="button" id="rename-cancel">Annulla</button></div>
+      </form>
+      <details class="withbox" id="withbox">
+        <summary class="t">Prenoti anche per altri?</summary>
+        <p class="hint" style="margin:6px 0 8px">Fino a 2 persone in più. Valgono per le prenotazioni che fai da ora, finché non cancelli i nomi.</p>
+        <div class="grid2">
+          <div class="field"><label for="c1">Persona 2</label><input id="c1" type="text" maxlength="40" placeholder="Nome e cognome"></div>
+          <div class="field"><label for="c2">Persona 3</label><input id="c2" type="text" maxlength="40" placeholder="Nome e cognome"></div>
+        </div>
+      </details>
+
+      <div id="days" class="days" role="group" aria-label="Scegli il giorno"></div>
+      <div id="daytitle"></div>
+      <div id="tt"></div>
+      <section class="card" id="mine"></section>
+    </section>
+
+    <section id="view-admin" hidden>
+      <section class="card">
+        <h2>Impostazioni</h2>
+        <div class="grid2">
+          <div class="field"><label for="s-cap">Persone contemporaneamente</label><input id="s-cap" type="number" min="1" max="200" inputmode="numeric"></div>
+          <div class="field"><label for="s-max">Ore massime al giorno per persona</label><input id="s-max" type="number" min="0.5" max="24" step="0.5" inputmode="decimal"></div>
+          <div class="field"><label for="s-open">Apertura</label><select id="s-open"></select></div>
+          <div class="field"><label for="s-close">Chiusura</label><select id="s-close"></select></div>
+          <div class="field"><label for="s-ahead">Giorni prenotabili in anticipo</label><input id="s-ahead" type="number" min="1" max="60" inputmode="numeric"><p class="hint">7 = oggi e i 6 giorni dopo. Per arrivare allo stesso giorno della settimana prossima metti 8.</p></div>
+        </div>
+        <div class="btnrow"><button class="btn" id="s-save">Salva impostazioni</button></div>
+      </section>
+      <section class="card">
+        <h2>Blocchi fissi</h2>
+        <p class="hint" style="margin:0 0 8px">Gli slot bloccati non si possono prenotare. Con i giorni della settimana il blocco si ripete ogni settimana.</p>
+        <div id="blocklist"></div>
+      </section>
+      <section class="card">
+        <h2 id="bf-title">Nuovo blocco</h2>
+        <div class="field"><label for="b-label">Motivo (visibile a tutti)</label><input id="b-label" type="text" maxlength="40" placeholder="Es. Corso agonisti"></div>
+        <div class="field" style="margin-top:10px"><label>Giorni della settimana</label><div class="daychecks" id="b-days"></div></div>
+        <div class="grid2" style="margin-top:10px">
+          <div class="field"><label for="b-start">Dalle</label><select id="b-start"></select></div>
+          <div class="field"><label for="b-end">Alle</label><select id="b-end"></select></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label for="b-date">Solo in una data (facoltativo)</label><input id="b-date" type="date"><p class="hint">Con una data il blocco vale solo quel giorno e i giorni della settimana vengono ignorati.</p></div>
+        <div class="btnrow"><button class="btn" id="b-save">Salva blocco</button><button class="btn sec" id="b-cancel" hidden>Annulla modifica</button></div>
+      </section>
+      <section class="card">
+        <h2>Ingressi e ore</h2>
+        <p class="hint" style="margin:0 0 8px">Ogni prenotazione viene registrata in automatico. Contano gli ingressi già svolti (turni consecutivi = un ingresso) a nome di chi entra, anche se prenotato da un altro. Le prenotazioni annullate non contano.</p>
+        <div id="statbox" class="grid2"></div>
+        <div class="btnrow"><a class="btn" id="dl" href="/api/admin/export.xlsx" download style="display:inline-flex;align-items:center;text-decoration:none">Scarica Excel</a></div>
+      </section>
+      <section class="card">
+        <h2>Iscritti</h2>
+        <p class="hint" style="margin:0 0 8px">Se qualcuno dimentica il PIN, assegnagli un PIN nuovo e diglielo. Esce da tutti i dispositivi.</p>
+        <div id="memberlist"></div>
+      </section>
+      <div class="btnrow"><button class="btn sec" id="logout">Esci dalla gestione</button></div>
+    </section>
+
+    <footer>
+      <button id="adminlink" hidden>Accesso gestori</button>
+      <form id="loginbox" class="card" hidden>
+        <div class="field"><label for="pw">Password gestori</label><input id="pw" type="password" autocomplete="current-password"></div>
+        <div class="btnrow"><button class="btn" type="submit">Accedi</button></div>
+      </form>
+    </footer>
+  </main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+var DOW=["Dom","Lun","Mar","Mer","Gio","Ven","Sab"], DOW_ORDER=[1,2,3,4,5,6,0];
+var $=function(s){return document.querySelector(s)};
+function el(tag,props){
+  var e=document.createElement(tag);
+  if(props)for(var k in props){var v=props[k];
+    if(k==="class")e.className=v;else if(k==="text")e.textContent=v;
+    else if(k.slice(0,2)==="on")e.addEventListener(k.slice(2),v);
+    else if(v===true)e.setAttribute(k,"");else if(v!==false&&v!=null)e.setAttribute(k,v);}
+  for(var i=2;i<arguments.length;i++){var c=arguments[i];if(c==null||c===false)continue;
+    if(Array.isArray(c))c.forEach(function(x){if(x)e.append(x)});else e.append(c.nodeType?c:document.createTextNode(c));}
+  return e;
+}
+var pad=function(n){return n<10?"0"+n:""+n};
+var toMin=function(t){return +t.slice(0,2)*60+ +t.slice(3,5)};
+var fromMin=function(m){return pad(Math.floor(m/60))+":"+pad(m%60)};
+function fmtDur(slots){var m=slots*30,h=Math.floor(m/60),r=m%60;return h?h+"h"+(r?" "+r+"min":""):r+" min"}
+function longDay(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})}
+function dowOf(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2]).getDay()}
+function slotList(open,close){var a=[];for(var m=toMin(open);m<toMin(close);m+=30)a.push(fromMin(m));return a}
+function timeOptions(sel,from,to){sel.replaceChildren();for(var m=from;m<=to;m+=30)sel.append(el("option",{value:fromMin(m),text:fromMin(m)}))}
+function keyName(n){return n.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase()}
+function toast(msg){if(!msg)return;var t=$("#toast");t.textContent=msg;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(function(){t.classList.remove("on")},3500)}
+
+var S=null,selDate=null,expanded={},editingId=null,confirmDel=null,busy=false,tab="book",showLogin=false;
+
+async function api(path,body){
+  var opt=body===undefined?{}:{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)};
+  var r=await fetch(path,opt),j={};
+  try{j=await r.json()}catch(e){}
+  if(!r.ok)throw new Error(j.error||"Qualcosa non ha funzionato. Riprova.");
+  return j;
+}
+async function load(){
+  try{
+    S=await api("/api/state");
+    $("#err").hidden=true;
+    if(!selDate||!S.counts[selDate])selDate=S.now.date;
+    render();
+  }catch(e){
+    if(!S){$("#err").hidden=false;$("#err").textContent="Non riesco a raggiungere il server. Controlla la connessione e riprova.";}
+  }
+}
+async function act(fn,okMsg){
+  if(busy)return;busy=true;
+  try{await fn();if(okMsg)toast(okMsg)}catch(e){toast(e.message)}
+  busy=false;await load();
+}
+
+/* ---------- prenotazioni ---------- */
+function companions(){return [$("#c1").value.trim(),$("#c2").value.trim()].filter(Boolean)}
+function blockFor(date,slot){
+  var wd=dowOf(date);
+  for(var i=0;i<S.blocks.length;i++){var b=S.blocks[i];
+    var ap=b.date?b.date===date:(b.days||[]).indexOf(wd)>=0;
+    if(ap&&slot>=b.start&&slot<b.end)return b;}
+  return null;
+}
+function mineAt(date,slot){return S.mine.filter(function(b){return b.date===date&&b.slot===slot})}
+function myOwnSlotsOn(date){var k=keyName(S.me.name);return S.mine.filter(function(b){return b.date===date&&keyName(b.name)===k}).length}
+
+function renderDays(){
+  var box=$("#days");box.replaceChildren();
+  Object.keys(S.counts).sort().forEach(function(s,i){
+    var p=s.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]);
+    box.append(el("button",{class:"day","aria-pressed":String(s===selDate),onclick:function(){selDate=s;renderDays();renderTT()}},
+      el("small",{text:i===0?"Oggi":DOW[d.getDay()]}),el("b",{text:String(+p[2])})));
+  });
+}
+function namesLine(date,slot){
+  var list=((S.who[date]||{})[slot])||[];
+  if(!list.length)return null;
+  var me=keyName(S.me.name),box=el("div",{class:"names"});
+  list.forEach(function(g,i){
+    if(i)box.append(", ");
+    var t=g.name+(g.n>1?" x"+g.n:"");
+    box.append(keyName(g.name)===me?el("b",{text:t}):document.createTextNode(t));
+  });
+  return box;
+}
+function renderTT(){
+  var tt=$("#tt"),title=$("#daytitle");tt.replaceChildren();title.replaceChildren();
+  var cap=S.settings.capacity,isToday=selDate===S.now.date;
+  title.append(el("h2",{text:longDay(selDate)}),
+    el("span",{text:S.isAdmin?"Gestore: nessun limite orario":"Le tue ore oggi: "+fmtDur(myOwnSlotsOn(selDate))+" su "+fmtDur(S.settings.maxSlotsPerDay)}));
+  slotList(S.settings.open,S.settings.close).forEach(function(s){
+    var n=(S.counts[selDate]||{})[s]||0,blk=blockFor(selDate,s),mine=mineAt(selDate,s),full=n>=cap;
+    var past=isToday&&toMin(s)+30<=S.now.min,key=selDate+"|"+s;
+    var cls="slot"+(blk?" blocked":"")+(past?" past":"")+(mine.length?" mine":"")+(!blk&&full?" full":(!blk&&n>=cap*0.75?" busy":""));
+    var middle,action;
+    if(blk){
+      middle=el("div",{class:"occ"},el("div",{class:"lbl",text:blk.label||"Riservato"}),el("div",{class:"meta"},el("span",{text:"Non prenotabile"})));
+      action=el("span",{class:"tag",text:"Bloccato"});
+    }else{
+      middle=el("div",{class:"occ"},
+        el("div",{class:"meta"},el("span",{text:n+" / "+cap+" persone"}),full?el("span",{text:"Pieno"}):null),
+        el("div",{class:"bar"},el("i",{style:"width:"+Math.min(100,Math.round(n/cap*100))+"%"})),
+        namesLine(selDate,s));
+      if(past)action=el("span",{class:"tag",text:"Passato"});
+      else if(mine.length)action=el("button",{class:"ghost","aria-label":"Annulla le prenotazioni delle "+s,
+        onclick:function(){act(function(){return api("/api/cancel",{ids:mine.map(function(b){return b.id})})},"Prenotazione annullata")},
+        text:mine.length>1?"Annulla ("+mine.length+")":"Prenotato ✓"});
+      else if(full)action=el("button",{disabled:true,text:"Pieno"});
+      else action=el("button",{"aria-label":"Prenota le "+s,
+        onclick:function(){act(function(){return api("/api/book",{date:selDate,slots:[s],companions:companions()})},"Prenotato alle "+s)},text:"Prenota"});
+    }
+    var slot=el("div",{class:cls},el("div",{class:"row"},el("div",{class:"time"},s,el("small",{text:"– "+fromMin(toMin(s)+30)})),middle,el("div",{class:"act"},action)));
+    if(S.isAdmin&&!blk&&n>0){
+      var open=!!expanded[key];
+      slot.append(el("div",{class:"details"},el("button",{class:"seeall",onclick:function(){expanded[key]=!expanded[key];renderTT()},text:open?"Nascondi chi ha prenotato":"Vedi chi ha prenotato"})));
+      if(open){
+        var det=el("div",{class:"details"});
+        S.all.filter(function(b){return b.date===selDate&&b.slot===s}).forEach(function(b){
+          det.append(el("div",{class:"p"},el("span",{text:b.name}),
+            el("button",{class:"linkbtn danger",onclick:function(){act(function(){return api("/api/cancel",{ids:[b.id]})},"Prenotazione rimossa")},text:"Rimuovi"})));
+        });
+        slot.append(det);
+      }
+    }
+    tt.append(slot);
+  });
+}
+function renderMine(){
+  var box=$("#mine");box.replaceChildren(el("h2",{text:"Le mie prenotazioni"}));
+  var groups={};
+  S.mine.forEach(function(b){var k=b.date+"|"+b.name;(groups[k]=groups[k]||{date:b.date,name:b.name,list:[]}).list.push(b)});
+  var items=[];
+  Object.keys(groups).forEach(function(k){
+    var g=groups[k];g.list.sort(function(a,b){return a.slot<b.slot?-1:1});
+    var cur=null;
+    g.list.forEach(function(b){
+      if(cur&&toMin(b.slot)===toMin(cur.last)+30){cur.last=b.slot;cur.ids.push(b.id);cur.n++}
+      else{cur={date:g.date,name:g.name,first:b.slot,last:b.slot,ids:[b.id],n:1};items.push(cur)}
+    });
+  });
+  items.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:a.first<b.first?-1:a.first>b.first?1:0});
+  if(!items.length){box.append(el("p",{class:"empty",text:"Non hai prenotazioni in programma."}));return}
+  items.forEach(function(it){
+    var forOther=keyName(it.name)!==keyName(S.me.name);
+    box.append(el("div",{class:"mine-item"},
+      el("div",null,el("b",{text:longDay(it.date)}),el("br"),it.first+" – "+fromMin(toMin(it.last)+30)+" · "+fmtDur(it.n)+(forOther?" · per "+it.name:"")),
+      el("button",{class:"linkbtn danger","aria-label":"Annulla "+longDay(it.date)+" "+it.first,onclick:function(){act(function(){return api("/api/cancel",{ids:it.ids})},"Prenotazione annullata")},text:"Annulla"})));
+  });
+}
+
+/* ---------- gestione ---------- */
+function fillSettings(){
+  var s=S.settings;
+  if(document.activeElement&&$("#view-admin").contains(document.activeElement))return;
+  $("#s-cap").value=s.capacity;$("#s-max").value=s.maxSlotsPerDay/2;$("#s-open").value=s.open;$("#s-close").value=s.close;$("#s-ahead").value=s.daysAhead;
+}
+function blockSummary(b){
+  var when=b.date?longDay(b.date):DOW_ORDER.filter(function(d){return (b.days||[]).indexOf(d)>=0}).map(function(d){return DOW[d]}).join(", ")+" ogni settimana";
+  return when+" · "+b.start+" – "+b.end;
+}
+function renderBlocks(){
+  var box=$("#blocklist");box.replaceChildren();
+  if(!S.blocks.length){box.append(el("p",{class:"empty",text:"Nessun blocco fisso. Aggiungine uno qui sotto."}));return}
+  S.blocks.forEach(function(b){
+    var asking=confirmDel===b.id;
+    box.append(el("div",{class:"blockitem"},
+      el("div",{class:"txt"},el("b",{text:b.label||"Riservato"}),el("small",{text:blockSummary(b)})),
+      el("div",{class:"btns"},
+        el("button",{class:"linkbtn",onclick:function(){editBlock(b)},text:"Modifica"}),
+        el("button",{class:"linkbtn danger",onclick:function(){
+          if(asking){confirmDel=null;act(function(){return api("/api/admin/block-delete",{id:b.id})},"Blocco eliminato")}
+          else{confirmDel=b.id;renderBlocks()}},text:asking?"Conferma":"Elimina"}))));
+  });
+}
+var pinFor=null;
+function renderMembers(){
+  var box=$("#memberlist");box.replaceChildren();
+  var list=S.members||[];
+  if(!list.length){box.append(el("p",{class:"empty",text:"Ancora nessun iscritto."}));return}
+  list.forEach(function(m){
+    var row=el("div",{class:"blockitem"},el("div",{class:"txt"},el("b",{text:m.name})));
+    if(pinFor===m.key){
+      var inp=el("input",{type:"text",inputmode:"numeric",maxlength:"4",placeholder:"PIN",id:"np-"+m.key,"aria-label":"Nuovo PIN per "+m.name,style:"width:90px"});
+      row.append(el("div",{class:"btns"},inp,
+        el("button",{class:"linkbtn",onclick:function(){var v=inp.value;act(function(){return api("/api/admin/set-pin",{key:m.key,pin:v}).then(function(){pinFor=null})},"PIN aggiornato")},text:"Salva"}),
+        el("button",{class:"linkbtn",onclick:function(){pinFor=null;renderMembers()},text:"Annulla"})));
+    }else row.append(el("div",{class:"btns"},el("button",{class:"linkbtn",onclick:function(){pinFor=m.key;renderMembers();var i=document.getElementById("np-"+m.key);if(i)i.focus()},text:"Nuovo PIN"})));
+    box.append(row);
+  });
+}
+function renderStats(){
+  var box=$("#statbox");box.replaceChildren();var t=S.stats;if(!t)return;
+  [["Ingressi, ultimi 30 giorni",t.ingressi30],["Ore, ultimi 30 giorni",t.ore30],["Persone diverse, 30 giorni",t.persone30],["Ingressi totali",t.ingressi],["Ore totali",t.ore],["Persone diverse totali",t.persone]].forEach(function(x){
+    box.append(el("div",{class:"stat"},el("b",{text:String(x[1])}),el("span",{text:x[0]})));
+  });
+}
+function resetBlockForm(){
+  editingId=null;$("#bf-title").textContent="Nuovo blocco";$("#b-label").value="";$("#b-date").value="";
+  $("#b-start").value="18:00";$("#b-end").value="20:00";
+  document.querySelectorAll("#b-days input").forEach(function(i){i.checked=false});$("#b-cancel").hidden=true;
+}
+function editBlock(b){
+  editingId=b.id;$("#bf-title").textContent="Modifica blocco";$("#b-label").value=b.label||"";
+  $("#b-date").value=b.date||"";$("#b-start").value=b.start;$("#b-end").value=b.end;
+  document.querySelectorAll("#b-days input").forEach(function(i){i.checked=(b.days||[]).indexOf(+i.value)>=0});
+  $("#b-cancel").hidden=false;$("#bf-title").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+/* ---------- schermate ---------- */
+function showTab(name){
+  tab=name;var a=name==="admin"&&S&&S.isAdmin;
+  $("#view-book").hidden=a||!S||!S.me;$("#view-admin").hidden=!a;
+  $("#tab-book").setAttribute("aria-selected",String(!a));$("#tab-admin").setAttribute("aria-selected",String(a));
+}
+function render(){
+  var s=S.settings,h=s.maxSlotsPerDay/2;
+  $("#sub").textContent="Massimo "+s.capacity+" persone alla volta. Fino a "+(h===1?"1 ora":h+" ore")+" al giorno a testa.";
+  $("#tabs").hidden=!S.isAdmin;
+  $("#welcome").hidden=!!S.me;
+  $("#adminlink").hidden=S.isAdmin;
+  $("#loginbox").hidden=S.isAdmin||!showLogin;
+  if(S.me){
+    $("#hello").textContent="Ciao, "+S.me.name;
+    renderDays();renderTT();renderMine();
+  }
+  if(!S.isAdmin&&tab==="admin")tab="book";
+  showTab(tab);
+  if(S.isAdmin){fillSettings();renderBlocks();renderStats();if(!pinFor)renderMembers()}
+}
+
+/* ---------- eventi ---------- */
+function init(){
+  timeOptions($("#s-open"),0,23*60+30);timeOptions($("#s-close"),30,24*60);
+  timeOptions($("#b-start"),0,23*60+30);timeOptions($("#b-end"),30,24*60);
+  DOW_ORDER.forEach(function(d){$("#b-days").append(el("label",null,el("input",{type:"checkbox",value:String(d)}),DOW[d]))});
+  resetBlockForm();
+  $("#adminlink").hidden=false;
+  function enter(create){
+    var name=$("#reg-name").value,pin=$("#reg-pin").value;
+    return act(function(){return api("/api/enter",{name:name,pin:pin,create:create}).then(function(r){
+      if(r.status==="new"){$("#newname").textContent=name.replace(/\s+/g," ").trim();$("#newbox").hidden=false;throw new Error("")}
+      $("#newbox").hidden=true;$("#reg-pin").value="";
+      toast(r.status==="created"?"Profilo creato. Ricorda il tuo PIN.":"Bentornato!");
+    })});
+  }
+  $("#regform").addEventListener("submit",function(e){e.preventDefault();$("#newbox").hidden=true;enter(false)});
+  $("#newok").addEventListener("click",function(){enter(true)});
+  $("#newno").addEventListener("click",function(){$("#newbox").hidden=true;$("#reg-name").focus()});
+  $("#exit").addEventListener("click",function(){act(function(){return api("/api/logout",{})},"Sei uscito")});
+  $("#rename").addEventListener("click",function(){$("#renameform").hidden=false;$("#new-name").value=S.me.name;$("#new-name").focus()});
+  $("#rename-cancel").addEventListener("click",function(){$("#renameform").hidden=true});
+  $("#renameform").addEventListener("submit",function(e){e.preventDefault();
+    act(function(){return api("/api/rename",{name:$("#new-name").value}).then(function(){$("#renameform").hidden=true})},"Nome aggiornato")});
+  $("#tab-book").addEventListener("click",function(){showTab("book")});
+  $("#tab-admin").addEventListener("click",function(){showTab("admin")});
+  $("#adminlink").addEventListener("click",function(){showLogin=!showLogin;$("#loginbox").hidden=!showLogin;if(showLogin)$("#pw").focus()});
+  $("#loginbox").addEventListener("submit",function(e){e.preventDefault();
+    act(function(){return api("/api/admin/login",{password:$("#pw").value}).then(function(){$("#pw").value="";showLogin=false;tab="admin"})},"Accesso gestori effettuato")});
+  $("#logout").addEventListener("click",function(){tab="book";act(function(){return api("/api/admin/logout",{})})});
+  $("#s-save").addEventListener("click",function(){
+    act(function(){return api("/api/admin/settings",{capacity:+$("#s-cap").value,maxSlotsPerDay:Math.round((+$("#s-max").value)*2),open:$("#s-open").value,close:$("#s-close").value,daysAhead:+$("#s-ahead").value})},"Impostazioni salvate")});
+  $("#b-save").addEventListener("click",function(){
+    var days=[].slice.call(document.querySelectorAll("#b-days input:checked")).map(function(i){return +i.value});
+    var body={id:editingId||undefined,label:$("#b-label").value,days:days,date:$("#b-date").value,start:$("#b-start").value,end:$("#b-end").value};
+    act(function(){return api("/api/admin/block",body).then(resetBlockForm)},editingId?"Blocco aggiornato":"Blocco aggiunto")});
+  $("#b-cancel").addEventListener("click",resetBlockForm);
+  load();
+  setInterval(function(){if(!document.hidden&&!busy)load()},20000);
+  document.addEventListener("visibilitychange",function(){if(!document.hidden)load()});
+}
+init();
+})();
+</script>
+</body>
+</html>

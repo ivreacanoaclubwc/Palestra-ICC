@@ -1,0 +1,9 @@
+{
+  "name": "palestra-ivrea-canoa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Prenotazione online della palestra sociale dell'Ivrea Canoa Club",
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "test": "node test.js" },
+  "engines": { "node": ">=18" }
+}
